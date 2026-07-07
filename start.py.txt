@@ -1,0 +1,190 @@
+import re
+from openpyxl import Workbook
+import os
+# =========================================================================
+# CONFIG
+# =========================================================================
+
+RAW_TITLES_FILE = "raw_titles.txt"  
+TITLES_FILE = "titles.txt"          
+OUTPUT_FILE = "import_ready.xlsx"    
+
+MIN_TITLE_LENGTH = 5
+MAX_TITLE_LENGTH = 130
+
+PRICE = "5"
+CATEGORY = "Прокат листовой " # тольео одна подкатегория
+MANUFACTURER = "Україна"
+PHONE = "0759653238"
+UNIT = "шт"
+PHOTO_URL = "https://ibb.co/XZ9BwPX1"  #сайтс imgbb.com
+
+TEMPLATE_HEADERS = [
+    "Артикул",
+    "Подрубрика*",
+    "Наименование* (от 5 до 120 символов)",
+    "Описание",
+    "Цена*, грн\n(только цифры)",
+    "Ед. изм.",
+    "Телефон*\n(буквы не допускаются)",
+    "Производитель",
+    "Ссылка на фото",
+    "Ссылка на фото 2 (для ВИП)",
+    "Ссылка на фото 3 (для ВИП)",
+    "Ссылка на фото 4 (для ВИП)",
+    "Ссылка на фото 5 (для ВИП)",
+    "Ссылка на фото 6 (для ВИП)",
+    "Ссылка на фото 7 (для ВИП)",
+    "Ссылка на фото 8 (для ВИП)",
+]
+
+# =========================================================================
+# ШАГ 1 — ОЧИСТКА ТЕКСТА
+# =========================================================================
+
+
+def clean_line(line):
+    text = line.strip()
+    if not text:
+        return ""
+
+    text = re.sub(r"^\[?\d+\]?\s*[\.\)\:\-]\s*", "", text)
+    text = re.sub(r"^[\-\*•—]\s*", "", text)
+    text = re.sub(r"^(заголовок|вариант|title|описание)\s*\d*\s*[:\-]\s*", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\*\*(.+?)\*\*", r"\1", text)
+    text = re.sub(r"__(.+?)__", r"\1", text)
+    text = re.sub(r"\*(.+?)\*", r"\1", text)
+    text = text.strip("\"'«»“”")
+    text = re.sub(r"\s+", " ", text).strip()
+
+    return text
+
+
+def is_probably_junk(text):
+    if len(text) < MIN_TITLE_LENGTH:
+        return True
+    if len(text) > MAX_TITLE_LENGTH:
+        return True
+    junk_markers = [
+        "конечно", "вот список", "вот 1000", "надеюсь", "если нужно",
+        "хотите продолжение", "готов продолжить",
+        "якщо хочете", "можу згенерувати", "готовий продовжити",
+        "ось список", "ось 1000",
+    ]
+    lowered = text.lower()
+    if any(marker in lowered for marker in junk_markers):
+        return True
+    if re.fullmatch(r"[\-\=\*_]{3,}", text):
+        return True
+    return False
+
+
+def clean_titles(input_path, output_path):
+    with open(input_path, "r", encoding="utf-8") as f:
+        raw_lines = f.readlines()
+
+    cleaned_titles = []
+    for line in raw_lines:
+        text = clean_line(line)
+        if not text:
+            continue
+        if is_probably_junk(text):
+            continue
+        cleaned_titles.append(text)
+
+    seen = set()
+    unique_titles = []
+    for t in cleaned_titles:
+        if t not in seen:
+            seen.add(t)
+            unique_titles.append(t)
+
+    duplicates_removed = len(cleaned_titles) - len(unique_titles)
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        for i, title in enumerate(unique_titles, start=1):
+            f.write(f"{i}. {title}\n")
+
+    print(f"[Очистка] Обработано строк из {input_path}: {len(raw_lines)}")
+    print(f"[Очистка] Получено чистых заголовков: {len(unique_titles)}")
+    if duplicates_removed:
+        print(f"[Очистка] Удалено дубликатов: {duplicates_removed}")
+    print(f"[Очистка] Сохранено в {output_path}")
+
+    return unique_titles
+
+
+# =========================================================================
+# ШАГ 2 — СБОРКА ФАЙЛА ИМПОРТА
+# =========================================================================
+
+
+def parse_numbered_titles(path):
+    titles = []
+    with open(path, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            match = re.match(r"^\d+[\.\)]\s*(.+)$", line)
+            if match:
+                titles.append(match.group(1).strip())
+            else:
+                if titles:
+                    titles[-1] += " " + line
+                else:
+                    titles.append(line)
+    return titles
+
+
+def build_import_file(titles, output_path):
+    """Собирает Excel-файл в формате шаблона promobud.ua."""
+    if not titles:
+        print("Заголовков не найдено — проверьте titles.txt")
+        return
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Лист1"
+
+    n_cols = len(TEMPLATE_HEADERS)
+
+    ws.append([None] * n_cols)    
+    ws.append(TEMPLATE_HEADERS)   
+    ws.append([None] * n_cols)   
+    ws.append([None] * n_cols)     
+
+    for title in titles:
+        row = [
+            "",             
+            CATEGORY,      
+            title,         
+            "",            
+            PRICE,          
+            UNIT,           
+            PHONE,          
+            MANUFACTURER,   
+            PHOTO_URL,     
+        ]
+        row += [""] * (n_cols - len(row))
+        ws.append(row)
+
+    wb.save(output_path)
+    
+    print(f"[Сборка] Готово! Файл сохранён: {output_path}")
+    print(f"[Сборка] Собрано объявлений: {len(titles)}")
+   
+
+# =========================================================================
+# ЗАПУСК
+# =========================================================================
+
+
+def main():
+    clean_titles(RAW_TITLES_FILE, TITLES_FILE)
+    titles = parse_numbered_titles(TITLES_FILE)
+    build_import_file(titles, OUTPUT_FILE)
+    os.remove("titles.txt")
+
+if __name__ == "__main__":
+    main()
