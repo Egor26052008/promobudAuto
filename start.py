@@ -11,11 +11,11 @@ MIN_TITLE_LENGTH = 5
 MAX_TITLE_LENGTH = 130
 
 PRICE = "5"
-CATEGORY = "Прокат листовой " # тольео одна подкатегория
+CATEGORY = ("Плиты тротуарные") # только одна подкатегория
 MANUFACTURER = "Україна"
-PHONE = "0759653238"
+PHONE = "0759653238   0984791055"
 UNIT = "шт"
-PHOTO_URL = "https://ibb.co/XZ9BwPX1"  #сайтс imgbb.com
+PHOTO_URL = ("https://ibb.co/MDRWNCV8", "https://ibb.co/Z68hjDdn", "https://ibb.co/bg7ZYD5H", "https://ibb.co/WWpCS9jN")  #сайтс imgbb.com
 
 TEMPLATE_HEADERS = [
     "Артикул",
@@ -142,10 +142,17 @@ def build_import_file(titles, output_path):
     ws.append([None] * n_cols)    
     ws.append(TEMPLATE_HEADERS)   
     ws.append([None] * n_cols)   
-    ws.append([None] * n_cols)     
-    photo = random.choice(PHOTO_URL)
-    category = random.choice(CATEGORY)
-    for title in titles:
+    ws.append([None] * n_cols) 
+
+
+    for title in titles:  
+        photo = random.choice(PHOTO_URL)
+        category = random.choice(CATEGORY)
+        n = ()
+        if len(PHOTO_URL) > 1:
+            n = photo
+        else:
+            n = PHOTO_URL(0)
         row = [
             "",             
             category,      
@@ -155,7 +162,7 @@ def build_import_file(titles, output_path):
             UNIT,           
             PHONE,          
             MANUFACTURER,   
-            photo,     
+            n,     
         ]
         row += [""] * (n_cols - len(row))
         ws.append(row)
