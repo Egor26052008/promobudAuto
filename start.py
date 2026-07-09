@@ -1,9 +1,7 @@
 import re
 from openpyxl import Workbook
 import os
-# =========================================================================
-# CONFIG
-# =========================================================================
+import random
 
 RAW_TITLES_FILE = "raw_titles.txt"  
 TITLES_FILE = "titles.txt"          
@@ -145,18 +143,19 @@ def build_import_file(titles, output_path):
     ws.append(TEMPLATE_HEADERS)   
     ws.append([None] * n_cols)   
     ws.append([None] * n_cols)     
-
+    photo = random.choice(PHOTO_URL)
+    category = random.choice(CATEGORY)
     for title in titles:
         row = [
             "",             
-            CATEGORY,      
+            category,      
             title,         
             "",            
             PRICE,          
             UNIT,           
             PHONE,          
             MANUFACTURER,   
-            PHOTO_URL,     
+            photo,     
         ]
         row += [""] * (n_cols - len(row))
         ws.append(row)
