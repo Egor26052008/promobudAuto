@@ -33,7 +33,22 @@ def crawl_all_pages(driver: webdriver.Firefox, start_url: str, interval: float =
         page_url = f"https://www.promobud.ua/price/self/page={page}/"
         driver.get(page_url)
         print(f"Открыта страница {page}/{last_page}: {page_url}")
+
+        update_date(driver)  # отмечаем чекбоксы и жмём "Обновить" прямо на этой странице
+
         time.sleep(interval)
+
+
+def update_date(driver: webdriver.Firefox):
+    
+    checkbox = driver.find_element(By.CSS_SELECTOR, "input.group[type='checkbox']")
+
+    if not checkbox.is_selected():
+        checkbox.click()
+
+    update_button = driver.find_element(By.CSS_SELECTOR, "a.gui-request.gui-fast-open[data-data='page=date_update']")
+    update_button.click()
+
 
 
 def open_site(url: str) -> None:
@@ -60,15 +75,6 @@ def open_site(url: str) -> None:
     driver.quit()
 
 
-def update_date(driver: webdriver.Firefox):
-    
-    checkbox = driver.find_element(By.CSS_SELECTOR, "input.group[type='checkbox']")
-
-    if not checkbox.is_selected():
-        checkbox.click()
-
-    update_button = driver.find_element(By.CSS_SELECTOR, "a.gui-request.gui-fast-open[data-data='page=date_update']")
-    update_button.click()
 
 
 if __name__ == "__main__":
