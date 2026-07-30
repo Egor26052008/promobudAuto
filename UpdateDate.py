@@ -1,17 +1,4 @@
-"""
-Скрипт на Selenium: открывает сайт и ждёт команду в консоли.
-По команде 'crawl' запускает обход всех страниц пагинации.
-По команде 'ex' закрывает браузер.
-
-Установка зависимостей:
-    pip install selenium webdriver-manager
-
-Запуск:
-    python open_site.py
-"""
-
 import time
-
 import re
 from selenium.webdriver.common.by import By
 from selenium import webdriver
