@@ -15,7 +15,9 @@ def create_driver() -> webdriver.Firefox:
     return driver
 
 
-def crawl_all_pages(driver: webdriver.Firefox, start_url: str, interval: float = 2.0) -> None:
+
+
+def crawl_all_pages(driver: webdriver.Firefox, interval: float = 2.0) -> None:
 
     element = driver.find_element(By.CSS_SELECTOR, "a.end[rel='next']")
     href = element.get_attribute("href")
@@ -39,6 +41,7 @@ def crawl_all_pages(driver: webdriver.Firefox, start_url: str, interval: float =
         time.sleep(interval)
 
 
+
 def update_date(driver: webdriver.Firefox):
     
     checkbox = driver.find_element(By.CSS_SELECTOR, "input.group[type='checkbox']")
@@ -48,6 +51,7 @@ def update_date(driver: webdriver.Firefox):
 
     update_button = driver.find_element(By.CSS_SELECTOR, "a.gui-request.gui-fast-open[data-data='page=date_update']")
     update_button.click()
+
 
 
 
