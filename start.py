@@ -12,13 +12,13 @@ MAX_TITLE_LENGTH = 130
 
 PRICE = "5"
 CATEGORY = (
-   
+   "Профильная труба",
 )# только одна подкатегория
 
 MANUFACTURER = "Україна"
 PHONE = "0759653238   0984791055"
 UNIT = "шт"
-PHOTO_URL = ("https://ibb.co/jYDyFSs", "https://ibb.co/QWWkYnN", "https://ibb.co/27q3nc1L",)  #сайтс imgbb.com
+PHOTO_URL = ("https://ibb.co/W4L48LBL",)  #сайтс imgbb.com
 
 TEMPLATE_HEADERS = [
     "Артикул",

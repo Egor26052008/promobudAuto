@@ -17,7 +17,7 @@ def create_driver() -> webdriver.Firefox:
 
 
 
-def crawl_all_pages(driver: webdriver.Firefox, interval: float = 2.0) -> None:
+def crawl_all_pages(driver: webdriver.Firefox, interval: float = 5.0) -> None:
 
     element = driver.find_element(By.CSS_SELECTOR, "a.end[rel='next']")
     href = element.get_attribute("href")
@@ -70,7 +70,7 @@ def open_site(url: str) -> None:
         if command == "ex":
             break
         elif command == "crawl":
-            crawl_all_pages(driver, url, interval=2.0)
+            crawl_all_pages(driver, interval=5.0)
         elif command == "check":
             update_date(driver)
         else:
